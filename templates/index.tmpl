@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Auth Web App</title>
+</head>
+<body>
+  <h1>Simple Auth Web App</h1>
+  {{with .User}}
+  <p>You are signed in as {{.Name}}!</p>
+  {{else}}
+  <p>You are not signed in!</p>
+  <a href="/login">Log In</a>
+  <a href="/signup">Sign Up</a>
+  {{end}}
+</body>
+</html>
