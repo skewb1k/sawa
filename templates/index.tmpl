@@ -7,6 +7,9 @@
   <h1>Simple Auth Web App</h1>
   {{with .User}}
   <p>You are signed in as {{.Name}}!</p>
+  <form action="/logout" method="POST">
+    <button>Log Out</button>
+  </form>
   {{else}}
   <p>You are not signed in!</p>
   <a href="/login">Log In</a>

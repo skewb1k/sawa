@@ -35,6 +35,13 @@ func setCookie(w http.ResponseWriter, id string) {
 	})
 }
 
+func deleteCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   cookieName,
+		MaxAge: -1,
+	})
+}
+
 func identify(r *http.Request) *User {
 	cookie, err := r.Cookie(cookieName)
 	if err != nil {
@@ -116,6 +123,11 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "signup.tmpl", data)
 }
 
+func logout(w http.ResponseWriter, r *http.Request) {
+	deleteCookie(w)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func main() {
 	log.SetFlags(0)
 	log.SetPrefix("sawa: ")
@@ -123,6 +135,7 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/signup", signup)
+	http.HandleFunc("/logout", logout)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
