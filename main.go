@@ -9,11 +9,14 @@ import (
 	"time"
 )
 
-//go:embed templates
+//go:embed templates/*
 var templatesFS embed.FS
 
-// TODO: factor out common HTML structure into _layout.tmpl.
-var templates = template.Must(template.ParseFS(templatesFS, "templates/*"))
+var (
+	tmplIndex  = template.Must(template.ParseFS(templatesFS, "templates/_layout.tmpl", "templates/index.tmpl"))
+	tmplLogin  = template.Must(template.ParseFS(templatesFS, "templates/_layout.tmpl", "templates/login.tmpl"))
+	tmplSignup = template.Must(template.ParseFS(templatesFS, "templates/_layout.tmpl", "templates/signup.tmpl"))
+)
 
 var users Users = NewUsersInmem()
 
@@ -52,7 +55,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}{
 		User: identify(r),
 	}
-	templates.ExecuteTemplate(w, "index.tmpl", data)
+	tmplIndex.ExecuteTemplate(w, "index.tmpl", data)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +70,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		if err != nil || user.Password != password {
 			w.WriteHeader(http.StatusBadRequest)
 			data.Error = "Invalid username or password"
-			templates.ExecuteTemplate(w, "login.tmpl", data)
+			tmplLogin.ExecuteTemplate(w, "login.tmpl", data)
 			return
 		}
 
@@ -75,7 +78,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	templates.ExecuteTemplate(w, "login.tmpl", data)
+	tmplLogin.ExecuteTemplate(w, "login.tmpl", data)
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +90,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		if _, err := users.UserByName(username); err == nil {
 			w.WriteHeader(http.StatusBadRequest)
 			data.Error = "Username already taken"
-			templates.ExecuteTemplate(w, "signup.tmpl", data)
+			tmplSignup.ExecuteTemplate(w, "signup.tmpl", data)
 			return
 		}
 		password := r.FormValue("password")
@@ -102,7 +105,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	templates.ExecuteTemplate(w, "signup.tmpl", data)
+	tmplSignup.ExecuteTemplate(w, "signup.tmpl", data)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {

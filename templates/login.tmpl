@@ -1,24 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Simple Auth Web App</title>
-</head>
-<body>
-  <h1>Simple Auth Web App</h1>
-  <h2>Log In</h2>
-  {{with .Error}}
-  <p style="color:red;">{{.}}</p>
-  {{end}}
-  <form method="POST">
-    <label for="username">Username:</label>
-    <br>
-    <input type="text" id="username" name="username" required pattern=".*\S+.*"><br>
-    <label for="password">Password:</label>
-    <br>
-    <input type="password" id="password" name="password" required pattern=".*\S+.*"><br>
-    <button>Log In</button>
-  </form>
-  <span>Do not have an account?</span>
-  <a href="/signup">Sign Up</a>
-</body>
-</html>
+{{template "_layout.tmpl" .}}
+
+{{define "content"}}
+<h2>Log In</h2>
+{{with .Error}}
+<p style="color:red;">{{.}}</p>
+{{end}}
+<form method="POST">
+  <label for="username">Username:</label>
+  <br>
+  <input type="text" id="username" name="username" required pattern=".*\S+.*"><br>
+  <label for="password">Password:</label>
+  <br>
+  <input type="password" id="password" name="password" required pattern=".*\S+.*"><br>
+  <button>Log In</button>
+</form>
+<span>Do not have an account?</span>
+<a href="/signup">Sign Up</a>
+{{end}}
