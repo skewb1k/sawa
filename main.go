@@ -15,12 +15,7 @@ var templatesFS embed.FS
 // TODO: factor out common HTML structure into _layout.tmpl.
 var templates = template.Must(template.ParseFS(templatesFS, "templates/*"))
 
-type User struct {
-	Name     string
-	Password string
-}
-
-var users = make(map[string]*User)
+var users Users = NewUsersInmem()
 
 const cookieName = "userid"
 
@@ -44,20 +39,11 @@ func identify(r *http.Request) *User {
 	if err != nil {
 		return nil
 	}
-	user, exists := users[cookie.Value]
-	if !exists {
+	user, exists := users.UserByID(cookie.Value)
+	if exists != nil {
 		return nil
 	}
 	return user
-}
-
-func authenticate(username, password string) string {
-	for id, user := range users {
-		if user.Name == username && user.Password == password {
-			return id
-		}
-	}
-	return ""
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -77,8 +63,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		password := r.FormValue("password")
 
-		id := authenticate(username, password)
-		if id == "" {
+		id, err := users.UserIDByNameAndPassword(username, password)
+		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			data.Error = "Invalid username or password"
 			templates.ExecuteTemplate(w, "login.tmpl", data)
@@ -98,20 +84,18 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == http.MethodPost {
 		username := r.FormValue("username")
-		for _, user := range users {
-			if user.Name == username {
-				w.WriteHeader(http.StatusBadRequest)
-				data.Error = "Username already taken"
-				templates.ExecuteTemplate(w, "signup.tmpl", data)
-				return
-			}
+		if _, err := users.UserByName(username); err == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			data.Error = "Username already taken"
+			templates.ExecuteTemplate(w, "signup.tmpl", data)
+			return
 		}
 		password := r.FormValue("password")
 		id := rand.Text()
-		users[id] = &User{
+		users.SetUser(id, &User{
 			Name:     username,
 			Password: password,
-		}
+		})
 
 		setCookie(w, id)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
