@@ -63,15 +63,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		password := r.FormValue("password")
 
-		id, err := users.UserIDByNameAndPassword(username, password)
-		if err != nil {
+		user, err := users.UserByName(username)
+		if err != nil || user.Password != password {
 			w.WriteHeader(http.StatusBadRequest)
 			data.Error = "Invalid username or password"
 			templates.ExecuteTemplate(w, "login.tmpl", data)
 			return
 		}
 
-		setCookie(w, id)
+		setCookie(w, user.ID)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -92,7 +92,8 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		}
 		password := r.FormValue("password")
 		id := rand.Text()
-		users.SetUser(id, &User{
+		users.SetUser(&User{
+			ID:       id,
 			Name:     username,
 			Password: password,
 		})

@@ -5,13 +5,13 @@ import (
 )
 
 type Users interface {
-	SetUser(id string, user *User) error
+	SetUser(user *User) error
 	UserByID(id string) (*User, error)
 	UserByName(name string) (*User, error)
-	UserIDByNameAndPassword(username, password string) (id string, err error)
 }
 
 type User struct {
+	ID       string
 	Name     string
 	Password string
 }
@@ -30,8 +30,8 @@ func NewUsersInmem() *UsersInmem {
 	}
 }
 
-func (u *UsersInmem) SetUser(id string, user *User) error {
-	u.m[id] = user
+func (u *UsersInmem) SetUser(user *User) error {
+	u.m[user.ID] = user
 	return nil
 }
 
@@ -50,13 +50,4 @@ func (u *UsersInmem) UserByName(username string) (*User, error) {
 		}
 	}
 	return nil, ErrUserNotFound
-}
-
-func (u *UsersInmem) UserIDByNameAndPassword(username, password string) (string, error) {
-	for id, user := range u.m {
-		if user.Name == username && user.Password == password {
-			return id, nil
-		}
-	}
-	return "", ErrUserNotFound
 }
